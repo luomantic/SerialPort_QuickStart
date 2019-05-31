@@ -15,7 +15,7 @@ public class SerialPortUtil {
     /**
      * 标记当前串口状态(true:打开,false:关闭)
      **/
-    private static boolean isFlagSerial = false;
+    private static boolean serialOpened = false;
 
     private static InputStream inputStream = null;
     private static OutputStream outputStream = null;
@@ -26,8 +26,7 @@ public class SerialPortUtil {
      * 打开串口
      */
     public static boolean open() {
-        boolean isOpen;
-        if(isFlagSerial){
+        if(serialOpened){
             LogUtils.e("串口已经打开");
             return false;
         }
@@ -36,25 +35,23 @@ public class SerialPortUtil {
             inputStream = serialPort.getInputStream();
             outputStream = serialPort.getOutputStream();
             receive();
-            isOpen = true;
-            isFlagSerial = true;
+            serialOpened = true;
+
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
-            isOpen = false;
+            return false;
         }
-        return isOpen;
     }
 
     /**
      * 关闭串口
      */
     public static boolean close() {
-        if(isFlagSerial){
+        if(serialOpened){
             LogUtils.e("串口关闭失败");
             return false;
         }
-        boolean isClose;
-        LogUtils.e( "关闭串口");
         try {
             if (inputStream != null) {
                 inputStream.close();
@@ -62,20 +59,20 @@ public class SerialPortUtil {
             if (outputStream != null) {
                 outputStream.close();
             }
-            isClose = true;
-            isFlagSerial = false;//关闭串口时，连接状态标记为false
+            serialOpened = false;//关闭串口时，连接状态标记为false
+
+            return true;
         } catch (IOException e) {
             e.printStackTrace();
-            isClose = false;
+            return false;
         }
-        return isClose;
     }
 
     /**
      * 发送串口指令
      */
     public static void sendString(String data) {
-        if (!isFlagSerial) {
+        if (!serialOpened) {
             LogUtils.e("串口未打开,发送失败" + data);
             return;
         }
@@ -93,20 +90,20 @@ public class SerialPortUtil {
      * 接收串口数据的方法
      */
     public static void receive() {
-        if (receiveThread != null && !isFlagSerial) {
+        if (receiveThread != null && !serialOpened) {
             return;
         }
         receiveThread = new Thread() {
             @Override
             public void run() {
-                while (isFlagSerial) {
+                while (serialOpened) {
                     try {
                         byte[] readData = new byte[32];
                         if (inputStream == null) {
                             return;
                         }
                         int size = inputStream.read(readData);
-                        if (size > 0 && isFlagSerial) {
+                        if (size > 0 && serialOpened) {
                             strData = ByteUtil.byteToStr(readData, size);
                             LogUtils.e("readSerialData:" + strData);
                         }

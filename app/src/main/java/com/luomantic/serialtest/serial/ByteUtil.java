@@ -22,13 +22,13 @@ public class ByteUtil {
      * @return
      */
     public static String strTo16(String s) {
-        String str = "";
+        StringBuilder str = new StringBuilder();
         for (int i = 0; i < s.length(); i++) {
             int ch = (int) s.charAt(i);
             String s4 = Integer.toHexString(ch);
-            str = str + s4;
+            str.append(s4);
         }
-        return str;
+        return str.toString();
     }
     /**
      * 16进制转换成为string类型字符串
@@ -51,7 +51,6 @@ public class ByteUtil {
         }
         try {
             s = new String(baKeyword, "UTF-8");
-            new String();
         } catch (Exception e1) {
             e1.printStackTrace();
         }
@@ -116,6 +115,7 @@ public class ByteUtil {
         }
         return ret.toString();
     }
+
     /**
      * BASE64码解密成图片
      */
